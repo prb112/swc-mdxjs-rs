@@ -941,7 +941,7 @@ fn transform_paragraph(
                 continue;
             }
             hast::Node::Text(node) => {
-                if inter_element_whitespace(&node.value) {
+                if inter_element_whitespace(node.value.as_bytes()) {
                     index += 1;
                     continue;
                 }

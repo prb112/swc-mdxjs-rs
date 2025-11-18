@@ -190,13 +190,10 @@ impl State<'_> {
                     JSXExpr::Expr(expression) => Ok(*expression),
                 }
             }
-            Some(JSXAttrValue::Lit(mut literal)) => {
+            Some(JSXAttrValue::Str(mut string_literal)) => {
                 // Remove `raw` so we don’t get character references in strings.
-                if let Lit::Str(string_literal) = &mut literal {
-                    string_literal.raw = None;
-                }
-
-                Ok(Expr::Lit(literal))
+                string_literal.raw = None;
+                Ok(Expr::Lit(Lit::Str(string_literal)))
             }
             Some(JSXAttrValue::JSXFragment(fragment)) => self.jsx_fragment_to_expression(fragment),
             Some(JSXAttrValue::JSXElement(element)) => self.jsx_element_to_expression(*element),
