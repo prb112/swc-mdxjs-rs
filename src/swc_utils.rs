@@ -545,7 +545,7 @@ pub enum JsxName<'a> {
 }
 
 /// Parse a JavaScript member expression or name.
-pub fn parse_js_name(name: &str) -> JsName {
+pub fn parse_js_name(name: &str) -> JsName<'_> {
     let bytes = name.as_bytes();
     let mut index = 0;
     let mut start = 0;
@@ -572,7 +572,7 @@ pub fn parse_js_name(name: &str) -> JsName {
 }
 
 /// Parse a JSX name from a string.
-pub fn parse_jsx_name(name: &str) -> JsxName {
+pub fn parse_jsx_name(name: &str) -> JsxName<'_> {
     match parse_js_name(name) {
         // `<a.b.c />`
         JsName::Member(parts) => JsxName::Member(parts),
@@ -616,8 +616,7 @@ pub fn jsx_member_to_parts(node: &JSXMemberExpr) -> Vec<&str> {
 /// Check if a text value is inter-element whitespace.
 ///
 /// See: <https://github.com/syntax-tree/hast-util-whitespace>.
-pub fn inter_element_whitespace(value: &str) -> bool {
-    let bytes = value.as_bytes();
+pub fn inter_element_whitespace(bytes: &[u8]) -> bool {
     let mut index = 0;
 
     while index < bytes.len() {

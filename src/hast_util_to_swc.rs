@@ -227,21 +227,21 @@ fn transform_element(
                     continue;
                 }
             }
-            hast::PropertyValue::String(x) => Some(Lit::Str(Str {
+            hast::PropertyValue::String(x) => Some(Str {
                 value: x.clone().into(),
                 span: swc_core::common::DUMMY_SP,
                 raw: None,
-            })),
-            hast::PropertyValue::CommaSeparated(x) => Some(Lit::Str(Str {
+            }),
+            hast::PropertyValue::CommaSeparated(x) => Some(Str {
                 value: x.join(", ").into(),
                 span: swc_core::common::DUMMY_SP,
                 raw: None,
-            })),
-            hast::PropertyValue::SpaceSeparated(x) => Some(Lit::Str(Str {
+            }),
+            hast::PropertyValue::SpaceSeparated(x) => Some(Str {
                 value: x.join(" ").into(),
                 span: swc_core::common::DUMMY_SP,
                 raw: None,
-            })),
+            }),
         };
 
         // Turn property case into either React-specific case, or HTML
@@ -251,7 +251,7 @@ fn transform_element(
 
         attrs.push(JSXAttrOrSpread::JSXAttr(JSXAttr {
             name: create_jsx_attr_name_from_str(&attr_name),
-            value: value.map(JSXAttrValue::Lit),
+            value: value.map(JSXAttrValue::Str),
             span: swc_core::common::DUMMY_SP,
         }));
 
@@ -292,13 +292,11 @@ fn transform_mdx_jsx_element(
         let attr = match &element.attributes[index] {
             hast::AttributeContent::Property(prop) => {
                 let value = match prop.value.as_ref() {
-                    Some(hast::AttributeValue::Literal(x)) => {
-                        Some(JSXAttrValue::Lit(Lit::Str(Str {
-                            value: x.clone().into(),
-                            span: swc_core::common::DUMMY_SP,
-                            raw: None,
-                        })))
-                    }
+                    Some(hast::AttributeValue::Literal(x)) => Some(JSXAttrValue::Str(Str {
+                        value: x.clone().into(),
+                        span: swc_core::common::DUMMY_SP,
+                        raw: None,
+                    })),
                     Some(hast::AttributeValue::Expression(expression)) => {
                         Some(JSXAttrValue::JSXExprContainer(JSXExprContainer {
                             expr: JSXExpr::Expr(
@@ -405,7 +403,7 @@ fn transform_root(
         if let JSXElementChild::JSXExprContainer(container) = &child {
             if let JSXExpr::Expr(expr) = &container.expr {
                 if let Expr::Lit(Lit::Str(str)) = (*expr).as_ref() {
-                    if inter_element_whitespace(str.value.as_ref()) {
+                    if inter_element_whitespace(str.value.as_bytes()) {
                         stash = true;
                     }
                 }
@@ -788,11 +786,11 @@ mod tests {
                                         sym: "className".into(),
                                         span: swc_core::common::DUMMY_SP,
                                     }),
-                                    value: Some(JSXAttrValue::Lit(Lit::Str(Str {
+                                    value: Some(JSXAttrValue::Str(Str {
                                         value: "b".into(),
                                         span: swc_core::common::DUMMY_SP,
                                         raw: None,
-                                    }))),
+                                    })),
                                     span: swc_core::common::DUMMY_SP,
                                 },)],
                                 self_closing: true,
@@ -1288,7 +1286,7 @@ mod tests {
             .err()
             .unwrap()
             .to_string(),
-            "Could not parse expression with swc: Unexpected eof (mdxjs-rs:swc)",
+            "Could not parse expression with swc: Expression expected (mdxjs-rs:swc)",
             "should support an `MdxElement` (element, attribute w/ broken expression value)",
         );
 
